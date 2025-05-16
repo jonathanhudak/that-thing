@@ -1,6 +1,6 @@
-# Scalable API Service for Post, User, and Tag Management
+# That Thing API Service
 
-This project is a low-cost, performant, and scalable RESTful API service built using AWS Cloud Development Kit (CDK) in TypeScript. It manages Posts, Users, and Tags with CRUD operations and robust access control. Development follows Test-Driven Development (TDD) principles, and `pnpm` is used for package management.
+This project is a low-cost, performant, and scalable RESTful API service built using AWS Cloud Development Kit (CDK) in TypeScript.
 
 ## Memory Bank Documentation
 
