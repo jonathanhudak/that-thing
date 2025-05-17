@@ -1,52 +1,67 @@
 # Active Context: Scalable API Service
 
 ## 1. Current Work Focus
-- **Initialization of Memory Bank:** The primary focus is on establishing the foundational documentation for the project within the Memory Bank.
-- **Defining Core Project Structure:** Laying out the project's objectives, technical architecture, and context as per the `projectbrief.md`, `productContext.md`, `systemPatterns.md`, and `techContext.md`.
+- **Enhancing Architecture and Finalizing Design based on Solutions Architect Review:** Integrating detailed findings from `research/solutions-architect-findings-to-enhance-architecture.md` into all core Memory Bank documents. This involves deepening the specifications for security, DynamoDB access patterns, scalability, error handling, observability, cost management, and testing.
 
 ## 2. Recent Changes
-- **Created `projectbrief.md`:** Summarized the project's goals and requirements from `docs/initial-idea.md`.
-- **Created `productContext.md`:** Detailed the problem space, how the system should work, and user experience goals.
-- **Created `systemPatterns.md`:** Outlined the system architecture, key technical decisions, and design patterns.
-- **Created `techContext.md`:** Documented the technology stack, development setup, and anticipated dependencies.
-- **Updated `projectbrief.md`**: Incorporated `pnpm`, TDD, and metadata-driven API docs.
-- **Updated `productContext.md`**: Incorporated `pnpm`, TDD, and metadata-driven API docs.
-- **Updated `systemPatterns.md`**: Incorporated TDD and metadata-driven API docs.
-- **Updated `techContext.md`**: Incorporated `pnpm`, TDD, and metadata-driven API docs.
-- **Currently updating `activeContext.md`**.
+- **Initial Memory Bank Setup:**
+    - Created `projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`.
+    - Incorporated `pnpm`, TDD, and metadata-driven API docs into these initial files.
+- **Solutions Architect Review Integration (Ongoing):**
+    - Updated `projectbrief.md` with enhanced non-functional requirements (security, cost, API versioning) and expanded risks/mitigations.
+    - Updated `productContext.md` to emphasize UX related to error handling, performance, and developer experience through observability.
+    - Updated `systemPatterns.md` with detailed access control models, DynamoDB GSI designs, query patterns, error handling, observability, and scalability strategies.
+    - Updated `techContext.md` with tools for extended testing, AWS services for monitoring/cost, and reinforced technical considerations.
+    - **Currently updating `activeContext.md`** to reflect these architectural enhancements and next steps.
 
-## 3. Next Steps (High-Level for Project Initiation)
-- **Create `progress.md`:** To track overall project status and evolution.
-- **Establish Project Skeleton (TDD Approach):**
+## 3. Next Steps (Post-Architectural Enhancement)
+- **Finalize `progress.md`:** Update to reflect the completion of architectural enhancements and current project status.
+- **Validate Enhanced Architecture:** Review all updated Memory Bank documents to ensure consistency and completeness of the refined architecture.
+- **Detailed Design Spike (If Needed):** For any remaining specific design points (e.g., exact CloudWatch alarm thresholds, API Gateway cache TTLs), conduct a brief focused investigation.
+- **Establish Project Skeleton (TDD Approach, reflecting enhanced architecture):**
     - Initialize a new project with `pnpm` (`package.json`).
     - Set up TypeScript (`tsconfig.json`).
-    - Initialize AWS CDK project structure.
-    - Configure ESLint and Prettier.
-    - Set up basic Git repository structure (e.g., `src`, `infra`, `tests` directories, with initial test files).
-- **Begin Implementation of Core Features (TDD Approach):**
-    - Write tests for Cognito User Pool setup via CDK, then implement.
-    - Write tests for DynamoDB table structure via CDK, then implement.
-    - Write tests for initial Lambda functions (e.g., `/me` endpoint), then implement.
-    - Focus on clear TypeScript types and JSDoc comments from the start to facilitate metadata extraction for API documentation.
+    - Initialize AWS CDK project structure (infra, src, tests).
+    - Configure ESLint, Prettier, Husky, Lint-Staged.
+    - Implement CI/CD pipeline basics (GitHub Actions) including linting, formatting, and initial test runs.
+- **Begin Implementation of Core Infrastructure & Features (TDD Approach):**
+    - **Authentication (Cognito):** Write tests, then implement CDK constructs for Cognito User Pool.
+    - **Database (DynamoDB):** Write tests, then implement CDK constructs for the single table with defined GSIs.
+    - **Observability Setup (CloudWatch, X-Ray):** Write tests (for CDK constructs if applicable), then implement basic logging, metrics, and tracing setup.
+    - **Core API (User Profile - e.g., `GET /v1/me`):** Write tests (unit, integration), then implement Lambda function, API Gateway endpoint, and IAM roles.
+    - Continue with other entities (Posts, Tags) following the TDD cycle.
 
 ## 4. Active Decisions & Considerations
-- **Local Development Tooling:** Decision leans towards `aws-sam-cli` for its closer AWS parity, as noted in `techContext.md`. This will be confirmed when setting up the local environment.
+- **Local Development Tooling:** Decision remains `aws-sam-cli` (preferred) or `serverless-offline`. To be confirmed during skeleton setup.
 - **Package Manager:** **Decision Made: `pnpm` will be used.**
-- **Initial Directory Structure:** A standard structure like `src/` (for Lambda code), `infra/` (for CDK stacks), `tests/` will be adopted.
+- **Initial Directory Structure:** Standard `src/`, `infra/`, `tests/` confirmed.
+- **API Versioning:** **Decision Made: Path-based versioning (e.g., `/v1/`) will be implemented from the start.**
+- **Error Handling:** **Decision Made: Standardized HTTP error codes and resilient error handling with retry mechanisms will be implemented.** (Specifics detailed in `systemPatterns.md`).
+- **Observability:** **Decision Made: AWS CloudWatch (Logs, Metrics, Alarms) and AWS X-Ray will be used.** (Specifics in `systemPatterns.md` and `techContext.md`).
+- **Cost Management:** **Decision Made: AWS Cost Explorer and Budgets will be utilized for monitoring and control.**
+- **Schema Evolution:** **Decision Made: Flexible schemas and batch migration strategies (e.g., Lambda) will be planned for.**
+- **Extended Testing:** **Decision Made: Load, security, and performance testing will be incorporated into the CI/CD pipeline.** (Tools listed in `techContext.md`).
+- **Security Model:** Detailed in `systemPatterns.md` (Cognito, Lambda auth, IAM least privilege, HTTPS).
+- **DynamoDB Design:** Detailed in `systemPatterns.md` (single-table, GSIs, query patterns).
 
-## 5. Important Patterns & Preferences (Emerging)
-- **Documentation First & Living Documentation:** Continue establishing clear documentation. Leverage code metadata (types, JSDoc) to ensure API documentation remains up-to-date with implementation.
-- **Test-Driven Development (TDD):** This is now a core development practice. All new functionality will begin with writing tests.
-- **Modularity:** The design (dedicated Lambda per endpoint, CDK stacks) leans towards modular components, which TDD will help enforce.
-- **Automation:** Emphasis on CI/CD, linting, formatting, and automated testing (integral to TDD) from the outset.
+## 5. Important Patterns & Preferences (Reinforced)
+- **Documentation First & Living Documentation:** Memory Bank is central. API documentation from code metadata.
+- **Test-Driven Development (TDD):** Core development methodology.
+- **Modularity:** Enforced by dedicated Lambdas and CDK constructs.
+- **Automation:** CI/CD, linting, formatting, automated testing (unit, integration, extended).
+- **Security by Design:** Integrating security considerations from the start.
+- **Cost Awareness:** Designing and operating with cost-effectiveness in mind.
 
-## 6. Learnings & Project Insights (Initial)
-- The initial PRD (`docs/initial-idea.md`) is comprehensive and provides a strong foundation.
-- The serverless approach with AWS CDK and TypeScript, combined with TDD, is well-suited for the project's objectives of creating a reliable, scalable, cost-effective, and maintainable API.
-- Establishing a robust local development environment that supports TDD efficiently will be critical.
-- Using `pnpm` will contribute to efficient dependency management.
-- Leveraging metadata for API documentation will streamline the documentation process and improve accuracy.
+## 6. Learnings & Project Insights (Post-SA Review)
+- The initial PRD and Memory Bank setup provided a good starting point.
+- The Solutions Architect review highlighted the critical importance of detailing non-functional requirements (security, scalability, observability, cost) and specific implementation patterns (DynamoDB GSIs, error handling) *before* starting code.
+- A proactive approach to schema evolution, API versioning, and comprehensive testing is essential for long-term project health.
+- Serverless architecture, while offering benefits, requires careful design in areas like cold starts, IAM permissions, and distributed tracing to be effective.
 
 ## 7. Open Questions / To Be Discussed
-- Specific versioning strategy for API endpoints (e.g., `/v1/posts`). For now, no versioning in the path will be assumed.
-- Detailed error handling strategy and standardized API error responses.
+- **Resolved:** API versioning strategy (Path-based `/v1/`).
+- **Resolved:** Detailed error handling strategy (Standardized HTTP codes, retries).
+- **New (Specifics for Implementation):**
+    - Exact TTL values for API Gateway caching on specific GET endpoints.
+    - Precise thresholds for CloudWatch Alarms (e.g., error rate percentages, latency ms).
+    - Specific strategy for `TAG#{tag_id}`, `SK = POST#{post_id}` relationship in DynamoDB – confirm if GSI is preferred over direct table scan for finding posts by tag, or if this access pattern is low priority. (Currently `systemPatterns.md` suggests GSI might be better).

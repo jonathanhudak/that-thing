@@ -1,78 +1,58 @@
 # Project Progress: Scalable API Service
 
 ## 1. Current Status
-- **Phase:** Project Initiation & Documentation.
-- **Overall Progress:** 0% (Code Implementation), 100% (Memory Bank Documentation Updated).
-- **Date:** 2025-05-15 (Corresponds to the latest update of this document)
+- **Phase:** Architectural Refinement & Design Finalization.
+- **Overall Progress:** 0% (Code Implementation), 100% (Memory Bank Documentation Architecturally Enhanced).
+- **Date:** 2025-05-16 (Corresponds to the latest update of this document)
 
 ## 2. What Works
-- **Memory Bank Core Files (Updated):**
-    - `projectbrief.md`: Updated with `pnpm`, TDD, metadata API docs.
-    - `productContext.md`: Updated with `pnpm`, TDD, metadata API docs.
-    - `systemPatterns.md`: Updated with TDD, metadata API docs.
-    - `techContext.md`: Updated with `pnpm`, TDD, metadata API docs.
-    - `activeContext.md`: Updated with `pnpm`, TDD, metadata API docs.
-    - `progress.md`: Currently being updated.
+- **Memory Bank Core Files (Architecturally Enhanced):**
+    - All core files (`projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, `activeContext.md`, `progress.md`) have been updated to incorporate detailed architectural enhancements based on the Solutions Architect review (`research/solutions-architect-findings-to-enhance-architecture.md`). This includes refined strategies for security, DynamoDB design, scalability, error handling, observability, cost management, API versioning, and testing.
 - **Initial Idea Document:** `docs/initial-idea.md` (Serves as the source PRD).
+- **Root README:** `README.md` providing an overview and links to the Memory Bank.
 
-## 3. What's Left to Build (High-Level Roadmap from `activeContext.md`, reflecting TDD and `pnpm`)
-- **Project Skeleton & Setup (TDD Approach):**
+## 3. What's Left to Build (High-Level Roadmap from `activeContext.md`)
+- **Validate Enhanced Architecture:** Review all updated Memory Bank documents for consistency and completeness.
+- **Detailed Design Spike (If Needed):** Address any remaining specific design points (e.g., CloudWatch alarm thresholds, API Gateway cache TTLs).
+- **Project Skeleton & Setup (TDD Approach, reflecting enhanced architecture):**
     - Initialize project with `pnpm` (`package.json`).
     - Configure TypeScript (`tsconfig.json`).
-    - Initialize AWS CDK project.
-    - Set up ESLint, Prettier.
-    - Define basic directory structure (`src/`, `infra/`, `tests/` with initial test files).
-    - Initialize Git repository.
-- **Core Infrastructure (CDK, TDD Approach):**
-    - Write tests for Amazon Cognito User Pool setup, then implement.
-    - Write tests for Amazon DynamoDB table (single-table design) setup, then implement.
-    - Write tests for IAM Roles and Policies for Lambda functions, then implement.
-- **Core API Features (Lambda & API Gateway via CDK, TDD Approach):**
-    - Focus on clear TypeScript types and JSDoc for metadata-driven API documentation from the start.
-    - **User Management (TDD):**
-        - Tests for Cognito sign-up/sign-in integration and Lambda trigger for profile, then implement.
-        - Tests for `GET /me` endpoint, then implement.
-        - Tests for `PUT /me` endpoint, then implement.
-    - **Post Management (TDD):**
-        - Tests for `POST /posts`, then implement.
-        - Tests for `GET /posts/{postId}`, then implement.
-        - Tests for `PUT /posts/{postId}`, then implement.
-        - Tests for `DELETE /posts/{postId}`, then implement.
-    - **Tag Management (TDD):**
-        - Tests for `POST /tags`, then implement.
-        - Tests for `GET /tags/{tagId}`, then implement.
-        - Tests for `PUT /tags/{tagId}`, then implement.
-        - Tests for `DELETE /tags/{tagId}`, then implement.
-- **Access Control Logic (TDD):** Implementation within each relevant Lambda, driven by tests.
-- **Local Development Environment:**
-    - Setup and scripts for `aws-sam-cli` (preferred) or `serverless-offline`.
-    - Integration of DynamoDB Local.
-    - API Explorer UI (Swagger/OpenAPI, with documentation from code metadata).
-- **Testing (as part of TDD):**
-    - Unit tests (Jest) written before code for all Lambda functions and CDK constructs where applicable.
-    - Integration tests (Jest) for API endpoints, also approached with TDD.
-- **CI/CD Pipeline:**
-    - Automated build, test, and deployment.
+    - Initialize AWS CDK project structure (`infra/`, `src/`, `tests/`).
+    - Set up ESLint, Prettier, Husky, Lint-Staged.
+    - Implement CI/CD pipeline basics (e.g., GitHub Actions) including linting, formatting, and initial test runs.
+- **Core Infrastructure & Features (TDD Approach):**
+    - **Authentication (Cognito):** Implement CDK constructs.
+    - **Database (DynamoDB):** Implement CDK constructs for the single table with defined GSIs.
+    - **Observability Setup (CloudWatch, X-Ray):** Implement basic logging, metrics, and tracing setup.
+    - **Core API (User Profile - e.g., `GET /v1/me`):** Implement Lambda, API Gateway endpoint, IAM roles.
+    - Continue with other entities (Posts, Tags) following the TDD cycle, incorporating detailed access control, error handling, and other defined patterns.
+- **Extended Testing:** Integrate load, security, and performance testing into the CI/CD pipeline.
 
 ## 4. Known Issues / Blockers
-- None at this exact moment, as development has not yet commenced. Potential future issues are listed in `projectbrief.md` (Risks and Mitigations).
+- None at this exact moment, as development has not yet commenced. Potential future issues are detailed in the "Risks and Mitigations" section of `projectbrief.md`.
+- Specific implementation details for some fine-grained configurations (e.g., cache TTLs, alarm thresholds) are pending final decisions during or just before implementation, as noted in `activeContext.md`.
 
 ## 5. Evolution of Project Decisions
-- **2025-05-15:**
-    - **Decision:** Initialize the Memory Bank as the first step of the project.
-    - **Rationale:** To establish a clear, documented foundation before any code is written, aligning with Cline's operational model.
-    - **Impact:** All core memory bank files (`projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, `activeContext.md`, `progress.md`) created based on `docs/initial-idea.md`.
-- **2025-05-15 (Initial Memory Bank Setup - from `activeContext.md`):**
-    - **Consideration:** `aws-sam-cli` vs `serverless-offline` for local development. `aws-sam-cli` is a slight preference initially.
-    - **Consideration:** `npm` as the default package manager.
-- **2025-05-15 (Memory Bank Update - User Feedback):**
-    - **Decision:** Adopt `pnpm` as the package manager.
-    - **Rationale:** User preference for `pnpm`'s efficiency.
-    - **Impact:** All references to `npm` in documentation changed to `pnpm`. Project setup will use `pnpm`.
-    - **Decision:** Implement exclusive Test-Driven Development (TDD).
-    - **Rationale:** User requirement to ensure adequate test coverage and guide development.
-    - **Impact:** Development workflow, testing strategies, and relevant documentation updated to reflect TDD.
-    - **Decision:** Leverage code metadata for API documentation generation.
-    - **Rationale:** User requirement for simpler API documentation maintenance.
-    - **Impact:** Documentation and planning updated to include strategies for metadata extraction for API Explorer.
-    - **Impact (Overall):** All core memory bank files reviewed and updated to reflect these decisions.
+- **2025-05-15 (Initial Setup):**
+    - **Decision:** Initialize the Memory Bank.
+    - **Rationale:** Establish a documented foundation.
+    - **Impact:** Core Memory Bank files created.
+- **2025-05-15 (User Feedback Integration):**
+    - **Decisions:** Adopt `pnpm`, exclusive TDD, metadata-driven API docs.
+    - **Rationale:** User preferences and requirements.
+    - **Impact:** Core Memory Bank files updated.
+- **2025-05-16 (Solutions Architect Review Integration):**
+    - **Decision:** Incorporate comprehensive architectural enhancements based on `research/solutions-architect-findings-to-enhance-architecture.md`.
+    - **Rationale:** To address potential gaps and ensure a robust, scalable, secure, and maintainable design before implementation, aligning with AWS best practices.
+    - **Impact (Key Enhancements):**
+        - **Security:** Detailed access control model (Cognito, Lambda auth logic, IAM least privilege, HTTPS), vulnerability monitoring considerations.
+        - **DynamoDB Design:** Specific single-table schema with PK/SK structures, GSIs for key access patterns, and query examples.
+        - **Scalability & Performance:** Strategies for Lambda optimization (provisioned concurrency, memory), DynamoDB (on-demand capacity, batch ops), API Gateway (throttling, caching).
+        - **Error Handling & Resilience:** Standardized HTTP error codes, retry mechanisms for transient failures.
+        - **Observability:** Comprehensive plan for logging (CloudWatch Logs), metrics (CloudWatch Metrics), alarms (CloudWatch Alarms), and tracing (AWS X-Ray).
+        - **Cost Management:** Proactive monitoring with AWS Cost Explorer and Budgets.
+        - **API Versioning:** Adopted path-based versioning (e.g., `/v1/`).
+        - **Schema Evolution:** Planning for flexible schemas and batch migration strategies.
+        - **Extended Testing:** Commitment to include load, security, and performance testing in CI/CD.
+        - **Alternatives Considered:** Confirmed sticking with Lambda/DynamoDB for core functionality based on cost-effectiveness and suitability.
+    - **Impact (Overall):** All core Memory Bank files (`projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, `activeContext.md`, `progress.md`) significantly updated to reflect these detailed architectural decisions and considerations, providing a much stronger foundation for development.

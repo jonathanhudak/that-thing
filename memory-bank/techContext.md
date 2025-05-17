@@ -9,6 +9,9 @@
 - **Database:** Amazon DynamoDB (Single-Table Design)
 - **Authentication:** Amazon Cognito User Pools
 - **Runtime Environment:** Node.js (for Lambda functions)
+- **Monitoring & Observability:** AWS CloudWatch (Logs, Metrics, Alarms), AWS X-Ray
+- **Cost Management:** AWS Cost Explorer, AWS Budgets
+- **Security Monitoring (Potential):** AWS Security Hub
 
 ## 2. Development Setup & Environment
 - **Local API Simulation:**
@@ -24,15 +27,17 @@
     - Target: Modern Node.js version compatible with AWS Lambda runtime.
 
 ## 3. Technical Constraints & Considerations
-- **Lambda Cold Starts:** Acknowledge potential for cold starts and plan mitigation (e.g., provisioned concurrency for critical/high-traffic endpoints if performance dictates).
-- **DynamoDB Single-Table Design Complexity:** Requires careful planning of access patterns and key structures. Querying can be less intuitive than SQL for developers new to NoSQL single-table designs.
-- **IAM Permissions:** Fine-grained IAM roles and policies are crucial for security (least privilege principle for Lambda functions accessing DynamoDB, Cognito, etc.).
-- **API Gateway Limits:** Be aware of API Gateway quotas and limits (request size, timeout, etc.).
-- **Lambda Limits:** Be aware of Lambda quotas and limits (execution time, memory, concurrent executions, payload size).
+- **Lambda Performance & Cold Starts:** Optimize memory allocation and execution time. Use provisioned concurrency for critical/high-traffic endpoints to mitigate cold starts.
+- **DynamoDB Capacity & Performance:** Careful planning of access patterns, key structures, and GSIs. Utilize on-demand capacity mode for automatic scaling, but monitor and consider provisioned capacity for predictable high-throughput workloads. Monitor for hot partitions.
+- **IAM Permissions:** Enforce least privilege principle for all IAM roles, especially for Lambda functions accessing DynamoDB, Cognito, etc.
+- **API Gateway Configuration:** Configure appropriate throttling limits based on expected traffic. Implement caching for frequently accessed GET requests with suitable TTLs. Be aware of quotas and limits (request size, timeout).
+- **Lambda Resource Limits:** Be aware of Lambda quotas and limits (execution time, memory, concurrent executions, payload size).
 - **CDK Deployment Times:** Large CDK stacks can sometimes have longer deployment times. Modularizing stacks might be considered for very large applications.
 - **Local Environment Parity:** Strive for high fidelity between local simulation and the actual AWS environment, but acknowledge that perfect parity is challenging.
 - **Test-Driven Development (TDD):** All development will strictly follow TDD principles. Tests (primarily unit tests with Jest) will be written before application code.
 - **API Documentation from Metadata:** Tools or conventions will be adopted to allow generation of OpenAPI specs from TypeScript types, JSDoc comments, or other code metadata to populate the API Explorer.
+- **Schema Evolution & Data Migration:** Plan for flexible schemas in DynamoDB. Develop strategies for batch data migrations (e.g., using Lambda functions) for significant schema changes.
+- **Extended Testing:** Beyond unit and integration tests, incorporate load testing, security testing, and performance testing into the development lifecycle and CI/CD pipeline.
 
 ## 4. Key Dependencies (Anticipated)
 ### Node.js Packages:
@@ -60,6 +65,9 @@
     - `ts-jest` (Jest preprocessor for TypeScript)
     - `@types/jest`
     - `aws-sdk-client-mock` (for mocking AWS SDK v3 clients in tests, essential for TDD).
+- **Extended Testing Tools (Potential):**
+    - Load Testing: `artillery`, `k6`, `locust`
+    - Security Testing: `OWASP ZAP`, `npm audit`, `snyk` (integrated into CI/CD)
 - **Input Validation:**
     - `zod` or `joi` (for validating request payloads and parameters in Lambda functions, schemas will be defined as part of TDD).
 - **API Documentation Generation Tools (Potential):**
@@ -89,7 +97,9 @@
     - `cdk synth`: Synthesizes CloudFormation templates.
     - `cdk diff`: Compares deployed stack with local changes.
 - **API Explorer UI:** Accessed via a local URL (e.g., `http://localhost:3000/docs`) during local development. Documentation within will be sourced from code metadata.
-- **Git Workflow:** Standard Git practices (feature branches, pull requests, etc.). Code merged to main must pass all tests and quality checks.
+- **Git Workflow:**
+    - Standard Git practices (feature branches, pull requests, etc.). Code merged to main must pass all tests and quality checks.
+    - **Commit Messages:** All commits MUST follow the Conventional Commits specification (e.g., `feat: ...`, `fix: ...`, `docs: ...`, `style: ...`, `refactor: ...`, `test: ...`, `chore: ...`). This includes a clear type, an optional scope, and a concise subject line. A detailed body should be provided for significant changes.
 - **CI/CD Pipeline (e.g., GitHub Actions):**
     - Triggered on pushes/merges to main branches.
-    - Steps: Install dependencies (`pnpm install`), lint, format check, build, test (extensive, due to TDD), CDK deploy.
+    - Steps: Install dependencies (`pnpm install`), lint, format check, build, unit & integration tests (extensive, due to TDD), security scans, load/performance tests (potentially on staging), CDK deploy.

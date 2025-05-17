@@ -49,11 +49,11 @@ This document is derived from the initial Product Requirements Document (PRD) fo
 - Visibility: If post is viewable, all its tags are viewable.
 
 ## 5. Non-Functional Requirements Overview
-- **Scalability**: Serverless components.
-- **Performance**: Optimized response times, mitigate cold starts.
-- **Cost-Effectiveness**: On-demand pricing.
-- **Security**: Secure endpoints, access control.
-- **Maintainability**: TypeScript, CDK.
+- **Scalability**: Serverless components, designed to handle varying loads.
+- **Performance**: Optimized response times, mitigation of cold starts (e.g., provisioned concurrency for critical endpoints), API Gateway caching where appropriate.
+- **Cost-Effectiveness**: On-demand pricing, proactive cost monitoring (e.g., AWS Budgets, Cost Explorer), and resource optimization.
+- **Security**: Secure endpoints (HTTPS), robust access control enforced in Lambda functions, least privilege IAM roles, Cognito for authentication, regular vulnerability monitoring (e.g., AWS Security Hub).
+- **Maintainability**: TypeScript, CDK, well-documented code and infrastructure.
 - **Testability**: High unit test coverage achieved via exclusive Test-Driven Development (TDD).
 - **Local Development**: API simulation, explorer UI (leveraging metadata for documentation).
 - **Code Quality**: ESLint, Prettier.
@@ -66,8 +66,10 @@ This document is derived from the initial Product Requirements Document (PRD) fo
 - **Data Model (DynamoDB Single Table)**:
     - PK: Entity ID (e.g., `USER#<id>`, `POST#<id>`).
     - SK: Sub-entity/relationship (e.g., `PROFILE`, `POST#<post_id>`).
-- **API Endpoints**: `/me`, `/posts`, `/posts/{postId}`, `/tags`, `/tags/{tagId}` with standard HTTP methods for CRUD.
-- **Lambda Functions**: One per endpoint, input validation, DynamoDB ops, access control.
+- **API Endpoints**: Path-based versioning (e.g., `/v1/me`, `/v1/posts`), standard HTTP methods for CRUD.
+- **Lambda Functions**: One per endpoint, input validation (e.g., using `zod`), DynamoDB ops, access control logic.
+- **Error Handling**: Standardized HTTP error codes and resilient error handling with retry mechanisms for transient failures.
+- **Observability**: Comprehensive logging (CloudWatch Logs), metrics (CloudWatch Metrics), and tracing (AWS X-Ray).
 
 ## 7. Local Development Environment
 - **Simulation**: `aws-sam-cli` or `serverless-offline`, DynamoDB Local.
@@ -92,4 +94,4 @@ This document is derived from the initial Product Requirements Document (PRD) fo
 - OAuth, friendship features, API pagination/filtering, monitoring.
 
 ## 12. Risks and Mitigations
-- Cold Starts (provisioned concurrency), DynamoDB Design (validation), Security (audits), Cost (alerts), Local Env Parity.
+- Cold Starts (provisioned concurrency, optimized Lambda settings), DynamoDB Design (thorough access pattern analysis, GSI planning, schema evolution strategy), Security (regular audits, AWS Security Hub, least privilege), Cost (AWS Budgets, Cost Explorer, resource optimization), Local Env Parity, API Versioning (clear strategy), Extended Testing (load, security, performance testing in CI/CD).

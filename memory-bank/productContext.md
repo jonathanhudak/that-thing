@@ -27,12 +27,13 @@ While this is a backend API, the "user" can be considered both the end-user of a
 
 ### For End-Users (of applications using this API):
 - **Security and Privacy:** Confidence that their data (posts, tags, profile information) is secure and only accessible according to defined permissions.
-- **Reliability:** Consistent and dependable access to their data and application features powered by the API.
-- **Performance:** Fast response times when interacting with features that rely on the API (e.g., loading posts, saving content).
+- **Reliability:** Consistent and dependable access to their data and application features powered by the API. This includes clear and understandable error messages if something goes wrong.
+- **Performance:** Fast response times when interacting with features that rely on the API (e.g., loading posts, saving content), achieved through optimized backend resources and caching strategies where appropriate.
 
 ### For Developers (using this API):
-- **Ease of Integration:** Clear API documentation (generated from code metadata and available via API Explorer) and well-defined endpoints make it straightforward to integrate the API into frontend applications or other services.
+- **Ease of Integration:** Clear API documentation (generated from code metadata and available via API Explorer), well-defined endpoints, and standardized error responses (HTTP codes and descriptive messages) make it straightforward to integrate the API into frontend applications or other services.
 - **Productivity:** A local development environment that closely mirrors production, strong typing (TypeScript), efficient package management (`pnpm`), and code quality tools (ESLint, Prettier) allow for efficient development. The exclusive use of Test-Driven Development (TDD) ensures that features are built correctly from the start and are accompanied by comprehensive tests.
 - **Maintainability:** A well-structured, type-safe, and thoroughly tested (due to TDD) codebase, along with infrastructure defined as code (AWS CDK), make the system easier to understand, modify, and extend over time.
 - **Scalability Confidence:** Assurance that the API is built on a scalable architecture, reducing concerns about future growth.
-- **Cost Transparency:** Understanding that the underlying architecture is designed for cost-effectiveness.
+- **Cost Transparency:** Understanding that the underlying architecture is designed for cost-effectiveness, with tools and practices in place for monitoring and optimizing costs.
+- **Observability:** Access to comprehensive logging (CloudWatch Logs), metrics (CloudWatch Metrics), and tracing (AWS X-Ray) to monitor API health, diagnose issues quickly, and understand system behavior, contributing to a more stable and reliable service.
