@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -69,6 +70,65 @@ export class InfraStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserPoolClientIdOutput', {
       value: userPoolClient.userPoolClientId,
       description: 'Cognito User Pool Client ID',
+    });
+
+    // DynamoDB Table (Single-Table Design)
+    const table = new dynamodb.Table(this, 'ApiSingleTable', {
+      tableName: `${this.stackName}-MainTable`,
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Or RETAIN for production
+
+      // Define attributes for GSIs if they are different from PK/SK
+      // Note: Attributes used in GSIs must be defined here if not already part of the primary key.
+      // The CDK L2 construct for Table will automatically add GSI key attributes
+      // to AttributeDefinitions if they are specified in addGlobalSecondaryIndex.
+      // So, explicit definition here is only needed if they are not used as GSI keys
+      // but are still required for some other reason (which is not the case here).
+    });
+
+    // GSI1: UserPostsIndex
+    table.addGlobalSecondaryIndex({
+      indexName: 'UserPostsIndex',
+      partitionKey: { name: 'GSI1PK', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GSI1SK', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // GSI2: AccessTypePostsIndex
+    table.addGlobalSecondaryIndex({
+      indexName: 'AccessTypePostsIndex',
+      partitionKey: { name: 'GSI2PK', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GSI2SK', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // GSI3: AllowedUserPostsIndex
+    table.addGlobalSecondaryIndex({
+      indexName: 'AllowedUserPostsIndex',
+      partitionKey: { name: 'GSI3PK', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GSI3SK', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // GSI4: TagPostsSortedIndex
+    table.addGlobalSecondaryIndex({
+      indexName: 'TagPostsSortedIndex',
+      partitionKey: { name: 'GSI4PK', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GSI4SK', type: dynamodb.AttributeType.STRING }, // Assuming post_created_at is stored as string for GSI SK
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Output the Table Name
+    new cdk.CfnOutput(this, 'TableNameOutput', {
+      value: table.tableName,
+      description: 'Main DynamoDB Table Name',
+    });
+    new cdk.CfnOutput(this, 'TableArnOutput', {
+      value: table.tableArn,
+      description: 'Main DynamoDB Table ARN',
     });
   }
 }
