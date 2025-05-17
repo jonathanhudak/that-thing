@@ -91,7 +91,11 @@ This document is derived from the initial Product Requirements Document (PRD) fo
 - **CI/CD**: Automated testing and deployment (e.g., GitHub Actions).
 
 ## 11. Future Considerations
-- OAuth, friendship features, API pagination/filtering, monitoring.
+- OAuth integration for authentication.
+- Friendship features (e.g., connecting users).
+- Advanced API pagination, filtering, and sorting capabilities.
+- Enhanced real-time monitoring and alerting dashboards.
+- **Personal Access Tokens (PATs):** An API endpoint for users to generate time-limited PATs for their account. These tokens will enable programmatic access to their data, facilitating integrations like MCP servers for LLM-driven generative features. This will require secure token generation, storage (e.g., hashed in DynamoDB), and validation mechanisms.
 
 ## 12. Risks and Mitigations
 - Cold Starts (provisioned concurrency, optimized Lambda settings), DynamoDB Design (thorough access pattern analysis, GSI planning, schema evolution strategy), Security (regular audits, AWS Security Hub, least privilege), Cost (AWS Budgets, Cost Explorer, resource optimization), Local Env Parity, API Versioning (clear strategy), Extended Testing (load, security, performance testing in CI/CD).

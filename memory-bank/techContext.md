@@ -38,6 +38,7 @@
 - **API Documentation from Metadata:** Tools or conventions will be adopted to allow generation of OpenAPI specs from TypeScript types, JSDoc comments, or other code metadata to populate the API Explorer.
 - **Schema Evolution & Data Migration:** Plan for flexible schemas in DynamoDB. Develop strategies for batch data migrations (e.g., using Lambda functions) for significant schema changes.
 - **Extended Testing:** Beyond unit and integration tests, incorporate load testing, security testing, and performance testing into the development lifecycle and CI/CD pipeline.
+- **Personal Access Token (PAT) Security (Future):** Secure generation, storage (hashed), and validation of PATs. This includes considerations for token entropy, expiry, scope management, and protection against leakage or replay attacks. Potential need for custom API Gateway authorizer for PATs if Cognito authorizers are not suitable.
 
 ## 4. Key Dependencies (Anticipated)
 ### Node.js Packages:
@@ -76,8 +77,9 @@
     - `aws-sam-cli` (preferred for local simulation due to closer AWS parity) or `serverless-offline`.
     - `dynamodb-local` (often run via Docker, not a direct `pnpm` dep but part of setup).
 - **Utility Libraries:**
-    - `uuid` (for generating unique IDs, if not provided by DynamoDB or other means sufficiently).
+    - `uuid` (for generating unique IDs).
     - Date/time libraries if complex manipulations are needed (e.g., `date-fns`).
+    - Cryptography libraries (e.g., Node.js `crypto` module) for secure hashing of PATs.
 - **Pre-commit Hooks:**
     - `husky`
     - `lint-staged`

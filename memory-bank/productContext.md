@@ -21,6 +21,7 @@ The system will function as a RESTful API service:
 - **Relationships:** Users own Posts and Tags. Posts can be associated with multiple Tags.
 - **Access Control Enforcement:** The API will rigorously enforce the defined access rules for all operations on Posts and Tags. For instance, a user cannot update a post they do not own. When assigning tags to a post, the user must either own the tag (if private) or the tag must be public.
 - **Local Development:** Developers will be able to run a local simulation of the API, including a local DynamoDB instance and an API explorer UI (with documentation derived from code metadata), to facilitate rapid development and testing. The development process will follow Test-Driven Development (TDD).
+- **Programmatic Access (Future):** Users will eventually be able to generate Personal Access Tokens (PATs) to authorize programmatic access to their account data, enabling integrations with external services or tools like MCP servers.
 
 ## 4. User Experience Goals
 While this is a backend API, the "user" can be considered both the end-user of an application built on this API and the developer working with the API.
@@ -37,3 +38,4 @@ While this is a backend API, the "user" can be considered both the end-user of a
 - **Scalability Confidence:** Assurance that the API is built on a scalable architecture, reducing concerns about future growth.
 - **Cost Transparency:** Understanding that the underlying architecture is designed for cost-effectiveness, with tools and practices in place for monitoring and optimizing costs.
 - **Observability:** Access to comprehensive logging (CloudWatch Logs), metrics (CloudWatch Metrics), and tracing (AWS X-Ray) to monitor API health, diagnose issues quickly, and understand system behavior, contributing to a more stable and reliable service.
+- **Extensibility (Future via PATs):** For developers, the ability to leverage Personal Access Tokens for programmatic access will open up opportunities for building extended functionalities and integrations (e.g., MCP servers for LLM features) on top of the user's data, with user consent and control.

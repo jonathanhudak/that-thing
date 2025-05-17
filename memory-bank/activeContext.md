@@ -30,6 +30,8 @@
     - **Observability Setup (CloudWatch, X-Ray):** Write tests (for CDK constructs if applicable), then implement basic logging, metrics, and tracing setup.
     - **Core API (User Profile - e.g., `GET /v1/me`):** Write tests (unit, integration), then implement Lambda function, API Gateway endpoint, and IAM roles.
     - Continue with other entities (Posts, Tags) following the TDD cycle.
+- **Future Feature Design (High-Level):**
+    - **Personal Access Token (PAT) System:** Outline core requirements and patterns for PAT generation, storage, validation, and management APIs. (Details in `projectbrief.md` and `systemPatterns.md`).
 
 ## 4. Active Decisions & Considerations
 - **Local Development Tooling:** Decision remains `aws-sam-cli` (preferred) or `serverless-offline`. To be confirmed during skeleton setup.
@@ -43,6 +45,7 @@
 - **Extended Testing:** **Decision Made: Load, security, and performance testing will be incorporated into the CI/CD pipeline.** (Tools listed in `techContext.md`).
 - **Security Model:** Detailed in `systemPatterns.md` (Cognito, Lambda auth, IAM least privilege, HTTPS).
 - **DynamoDB Design:** Detailed in `systemPatterns.md` (single-table, GSIs, query patterns).
+- **Future Feature - Personal Access Tokens (PATs):** Acknowledged as a future requirement for enabling programmatic access and MCP server integration. High-level considerations are noted in `projectbrief.md` and `systemPatterns.md`.
 
 ## 5. Important Patterns & Preferences (Reinforced)
 - **Documentation First & Living Documentation:** Memory Bank is central. API documentation from code metadata.
@@ -57,6 +60,7 @@
 - The Solutions Architect review highlighted the critical importance of detailing non-functional requirements (security, scalability, observability, cost) and specific implementation patterns (DynamoDB GSIs, error handling) *before* starting code.
 - A proactive approach to schema evolution, API versioning, and comprehensive testing is essential for long-term project health.
 - Serverless architecture, while offering benefits, requires careful design in areas like cold starts, IAM permissions, and distributed tracing to be effective.
+- The potential for future extensibility via features like Personal Access Tokens (PATs) reinforces the need for a solid, secure, and well-documented core API.
 
 ## 7. Open Questions / To Be Discussed
 - **Resolved:** API versioning strategy (Path-based `/v1/`).
@@ -65,3 +69,8 @@
     - Exact TTL values for API Gateway caching on specific GET endpoints.
     - Precise thresholds for CloudWatch Alarms (e.g., error rate percentages, latency ms).
     - Specific strategy for `TAG#{tag_id}`, `SK = POST#{post_id}` relationship in DynamoDB – confirm if GSI is preferred over direct table scan for finding posts by tag, or if this access pattern is low priority. (Currently `systemPatterns.md` suggests GSI might be better).
+- **Future - Personal Access Tokens (PATs):**
+    - Detailed design for token scopes (e.g., read-only, read/write specific entities).
+    - Specifics of token expiry and refresh mechanisms.
+    - UI/API design for user management of their PATs (creation, listing, revocation).
+    - Choice of hashing algorithm and salt management for stored token hashes.

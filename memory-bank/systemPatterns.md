@@ -47,6 +47,7 @@ graph TD
 - **Middleware (API Gateway Authorizer):** Cognito authorizers act as middleware to handle authentication and authorization before requests reach the Lambda functions.
 - **Event-Driven (Cognito Trigger):** The creation of a user profile in DynamoDB is triggered by a Cognito PostConfirmation event, demonstrating an event-driven pattern for decoupling user sign-up from profile persistence.
 - **Single Responsibility Principle (Lambda Functions):** Each Lambda function is designed to handle a single, well-defined task corresponding to an API endpoint.
+- **Token-Based Authentication for Programmatic Access (Future - PATs):** A system for generating, storing (hashed), and validating Personal Access Tokens to allow users to grant programmatic access to their accounts.
 
 ## 4. Component Relationships
 - **API Gateway & Lambda:** API Gateway routes HTTP requests to the appropriate Lambda function based on path and method. It passes request payloads and path parameters to the Lambda.
@@ -83,6 +84,10 @@ graph TD
         - **GSI3 (AllowedUserPostsIndex):** For listing posts where a user is an allowed user.
             - Query `Allowed Users` items: `PK = POST#{post_id}, SK = ALLOWED_USER#{user_id}`. Then fetch Post details.
             - Alternative GSI for direct query: `GSI3PK = ALLOWED_USER#{user_id}` (maps to `user_id` on `Allowed Users` items), `GSI3SK = POST#{post_id}`. This allows finding all posts a user is explicitly allowed to see.
+    - **Personal Access Tokens (PATs) (Future):**
+        - `PK = USER#{user_id}`, `SK = PAT#{token_id}`
+        - Attributes: `{hashed_token, name, scopes (e.g., ["read:posts", "write:posts"]), expires_at, last_used_at, created_at}`
+        - Note: The actual token value is shown to the user once upon creation and is not stored directly. Only a cryptographically secure hash (e.g., SHA256) of the token is stored.
 
 ### 4.1 Key Query Patterns
 - **Get Post by ID:** Query table: `PK = POST#{post_id}, SK = DETAILS`.
@@ -98,19 +103,25 @@ graph TD
 - **Get User Profile:** Query table: `PK = USER#{user_id}`, `SK = PROFILE`.
 
 ## 5. Critical Implementation Paths
-- **Authentication Flow:** Ensuring seamless user sign-up, login, JWT issuance by Cognito, and token validation at the API Gateway. All communications must use HTTPS.
+- **Authentication Flow:**
+    - **Cognito JWTs:** Ensuring seamless user sign-up, login, JWT issuance by Cognito, and token validation at the API Gateway for user-facing interactions. All communications must use HTTPS.
+    - **Personal Access Tokens (PATs) (Future):** For programmatic access, a separate authentication mechanism will validate PATs. This might involve a custom API Gateway authorizer or direct validation logic within Lambda functions. PATs would be passed via an `Authorization: Bearer <PAT>` header.
 - **Access Control Logic:**
-    - Implementing robust and correct access control checks within each relevant Lambda function.
+    - Implementing robust and correct access control checks within each relevant Lambda function, considering both Cognito JWT authenticated users and PAT authenticated requests.
     - **Cognito Integration:** API Gateway uses Cognito authorizers to validate JWTs. Authenticated user identity (e.g., `user_id` or `sub`) is passed to Lambda functions.
-    - **Lambda Authorization for Posts:**
-        - `private`: `user_id` from Post item must match authenticated `user_id`.
-        - `public`: Accessible if user is authenticated.
-        - `allowed_user`: Check if an item `PK = POST#{post_id}, SK = ALLOWED_USER#{authenticated_user_id}` exists.
-    - **Lambda Authorization for Tags:**
-        - `private`: `user_id` from Tag item must match authenticated `user_id` for viewing and assignment.
-        - `public`: Viewable and assignable by any authenticated user.
-    - **IAM Least Privilege:** Lambda execution roles must have minimal necessary permissions (e.g., specific DynamoDB actions like `GetItem`, `PutItem`, `Query` on the specific table/indexes).
-    - **Error Responses:** Return standard HTTP status codes: 401 (Unauthorized) for missing/invalid tokens, 403 (Forbidden) for insufficient permissions, 404 (Not Found) for missing resources.
+    - **PAT Validation (Future):**
+        - Extract token from `Authorization` header.
+        - Look up the hashed token in DynamoDB (e.g., `PK = USER#{user_id}, SK = PAT#{token_id}`, potentially using a GSI on the hashed token if user context isn't available initially, though PATs are typically user-specific).
+        - Verify token is not expired and has necessary scopes for the requested operation.
+    - **Lambda Authorization for Posts (applies to both JWT and PAT context):**
+        - `private`: `user_id` associated with the token (JWT or PAT) must match Post's `user_id`.
+        - `public`: Accessible if user/token is authenticated.
+        - `allowed_user`: Check if an item `PK = POST#{post_id}, SK = ALLOWED_USER#{user_id_from_token}` exists.
+    - **Lambda Authorization for Tags (applies to both JWT and PAT context):**
+        - `private`: `user_id` associated with the token must match Tag's `user_id` for viewing and assignment.
+        - `public`: Viewable and assignable if user/token is authenticated.
+    - **IAM Least Privilege:** Lambda execution roles must have minimal necessary permissions.
+    - **Error Responses:** Standard HTTP status codes (401, 403, 404).
 - **DynamoDB Single-Table Design & Querying:**
     - Correctly modeling entities and their relationships in the single-table design as detailed in Section 4.
     - Crafting efficient DynamoDB queries using Primary Keys and GSIs for various access patterns.

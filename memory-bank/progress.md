@@ -27,6 +27,8 @@
     - **Core API (User Profile - e.g., `GET /v1/me`):** Implement Lambda, API Gateway endpoint, IAM roles.
     - Continue with other entities (Posts, Tags) following the TDD cycle, incorporating detailed access control, error handling, and other defined patterns.
 - **Extended Testing:** Integrate load, security, and performance testing into the CI/CD pipeline.
+- **Future Features (Post-MVP - Design Phase):**
+    - **Personal Access Token (PAT) System:** High-level design and requirements gathering for PAT generation, storage, validation, and management APIs.
 
 ## 4. Known Issues / Blockers
 - None at this exact moment, as development has not yet commenced. Potential future issues are detailed in the "Risks and Mitigations" section of `projectbrief.md`.
@@ -56,3 +58,7 @@
         - **Extended Testing:** Commitment to include load, security, and performance testing in CI/CD.
         - **Alternatives Considered:** Confirmed sticking with Lambda/DynamoDB for core functionality based on cost-effectiveness and suitability.
     - **Impact (Overall):** All core Memory Bank files (`projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, `activeContext.md`, `progress.md`) significantly updated to reflect these detailed architectural decisions and considerations, providing a much stronger foundation for development.
+- **2025-05-16 (Future Feature Identification):**
+    - **Decision:** Added Personal Access Tokens (PATs) as a future feature.
+    - **Rationale:** To enable programmatic access to individual user accounts, facilitating integrations like MCP servers for LLM-driven generative features.
+    - **Impact:** Updated `projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, and `activeContext.md` to include high-level considerations for PATs (e.g., API endpoints, security, DynamoDB storage for hashed tokens). `progress.md` updated to list PAT system design as a future task.
