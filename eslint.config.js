@@ -44,8 +44,17 @@ module.exports = [
       // to avoid immediate need for all types if some files are not perfectly typed yet.
       // Can switch to recommendedTypeChecked or strictTypeChecked later.
       ...tseslint.configs.recommended.rules,
-      // Add any custom rules or overrides here
-      // e.g., '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // Custom rules
+      'no-unused-vars': 'off', // Turn off base ESLint rule, use TS version
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true, // Important for { ...rest } syntax
+        },
+      ],
     },
   },
   // Specific overrides for CDK code in the infra directory
@@ -80,6 +89,17 @@ module.exports = [
     ...jestPlugin.configs['flat/recommended'],
     rules: {
       ...jestPlugin.configs['flat/recommended'].rules,
+      // Allow template.hasResourceProperties as an assertion
+      'jest/expect-expect': [
+        'warn',
+        {
+          assertFunctionNames: [
+            'expect',
+            'template.hasResourceProperties',
+            'template.resourceCountIs',
+          ],
+        },
+      ],
       // You can override or add more Jest-specific rules here if needed
       // For example, if using TypeScript with Jest and type-checking in tests:
       // '@typescript-eslint/unbound-method': 'off', // jest.spyOn can lead to this

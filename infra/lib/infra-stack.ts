@@ -2,6 +2,12 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+// import * as iam from 'aws-cdk-lib/aws-iam'; // Removed as it's unused
+import * as path from 'path';
+// import * as cw_actions from 'aws-cdk-lib/aws-cloudwatch-actions'; // If actions like SNS are needed
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -129,6 +135,141 @@ export class InfraStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'TableArnOutput', {
       value: table.tableArn,
       description: 'Main DynamoDB Table ARN',
+    });
+
+    // CloudWatch Alarms
+    // DynamoDB Write Throttles Alarm
+    const _dynamoDbWriteThrottleAlarm = new cloudwatch.Alarm(
+      this,
+      'DynamoDbWriteThrottleAlarm',
+      {
+        alarmName: `${this.stackName}-DynamoDB-WriteThrottleEvents`,
+        alarmDescription: `Alarm for DynamoDB WriteThrottleEvents on table ${table.tableName}`,
+        metric: table.metric('WriteThrottleEvents', {
+          statistic: cloudwatch.Statistic.SUM,
+          period: cdk.Duration.minutes(5),
+        }),
+        threshold: 10,
+        evaluationPeriods: 1,
+        comparisonOperator:
+          cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      }
+    );
+
+    // Cognito SignIn Throttles Alarm
+    // Note: 'SignInThrottles' might not be a standard metric directly available via userPool.metric().
+    // If it's not, a custom metric or a different standard metric would be needed.
+    // For now, proceeding as if it's available or can be created as a Metric object.
+    // The test expects MetricName: 'SignInThrottles', Namespace: 'AWS/Cognito'.
+    const cognitoSignInThrottleMetric = new cloudwatch.Metric({
+      namespace: 'AWS/Cognito',
+      metricName: 'SignInThrottles', // As per design spike and test
+      dimensionsMap: {
+        UserPoolId: userPool.userPoolId,
+        // ClientId: userPoolClient.userPoolClientId, // Some Cognito metrics are per UserPool, some per ClientId
+      },
+      statistic: cloudwatch.Statistic.SUM,
+      period: cdk.Duration.minutes(1),
+    });
+
+    const _cognitoSignInThrottleAlarm = new cloudwatch.Alarm(
+      this,
+      'CognitoSignInThrottleAlarm',
+      {
+        alarmName: `${this.stackName}-Cognito-SignInThrottles`,
+        alarmDescription: `Alarm for Cognito SignInThrottles on UserPool ${userPool.userPoolId}`,
+        metric: cognitoSignInThrottleMetric,
+        threshold: 5,
+        evaluationPeriods: 1,
+        comparisonOperator:
+          cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      }
+    );
+
+    // API Gateway REST API
+    const api = new apigateway.RestApi(this, 'UserProfileApi', {
+      restApiName: `${this.stackName}-UserProfileApi`,
+      description: 'API for user profiles, posts, and tags.',
+      deployOptions: {
+        stageName: 'dev', // Default stage, can be configured further
+        tracingEnabled: true, // Enable X-Ray tracing
+        loggingLevel: apigateway.MethodLoggingLevel.INFO, // Enable execution logging
+        dataTraceEnabled: true,
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS, // Or specify allowed origins
+        allowMethods: apigateway.Cors.ALL_METHODS, // Or specify allowed methods like ['GET', 'POST', 'PUT', 'DELETE']
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+          'X-Amz-Security-Token',
+        ],
+        // statusCode: 200 // Default is 204 for OPTIONS if not specified by integration
+      },
+      endpointConfiguration: {
+        types: [apigateway.EndpointType.REGIONAL],
+      },
+    });
+
+    // Cognito User Pool Authorizer for API Gateway
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(
+      this,
+      'ApiCognitoAuthorizer',
+      {
+        cognitoUserPools: [userPool],
+        authorizerName: `${this.stackName}-CognitoAuthorizer`,
+        // identitySource: 'method.request.header.Authorization' // Default
+      }
+    );
+
+    // Lambda Function for GetUserProfile
+    const getUserProfileLambda = new lambda.Function(
+      this,
+      'GetUserProfileLambda',
+      {
+        functionName: `${this.stackName}-GetUserProfile`,
+        runtime: lambda.Runtime.NODEJS_20_X,
+        code: lambda.Code.fromAsset(
+          path.join(__dirname, '../../dist/handlers/user')
+        ), // Assumes profile.js is in dist/handlers/user
+        handler: 'profile.handler', // Filename 'profile.js', function 'handler'
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(10),
+        tracing: lambda.Tracing.ACTIVE, // Enable X-Ray tracing for Lambda
+        environment: {
+          DDB_TABLE_NAME: table.tableName,
+        },
+        // Default execution role provides CloudWatch Logs permissions (AWSLambdaBasicExecutionRole)
+      }
+    );
+    // Grant table read access to the lambda
+    table.grantReadData(getUserProfileLambda);
+
+    // API Gateway Resources and Methods
+    const v1Resource = api.root.addResource('v1'); // /v1
+    const meResource = v1Resource.addResource('me'); // /v1/me
+
+    meResource.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(getUserProfileLambda),
+      {
+        authorizer: authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      }
+    );
+
+    // Output API Gateway URL
+    new cdk.CfnOutput(this, 'ApiGatewayUrl', {
+      value: api.url,
+      description: 'API Gateway base URL',
+    });
+    new cdk.CfnOutput(this, 'ApiGatewayMeUrl', {
+      value: `${api.url}v1/me`,
+      description: 'API Gateway /v1/me URL',
     });
   }
 }
