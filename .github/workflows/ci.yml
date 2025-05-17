@@ -1,0 +1,52 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main # Or your primary branch name
+  pull_request:
+    branches:
+      - main # Or your primary branch name
+
+jobs:
+  build_and_test:
+    name: Build, Lint, Format Check & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # Specify pnpm version, aligns with packageManager in package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Choose a Node.js version, e.g., LTS
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint check
+        run: pnpm run lint
+
+      - name: Format check
+        run: pnpm run format:check
+
+      - name: Type check (src)
+        run: pnpm exec tsc --noEmit --project tsconfig.json
+
+      - name: Build CDK (infra)
+        run: cd infra && pnpm install --frozen-lockfile && pnpm run build # CDK has its own package.json
+
+      - name: Run tests (root)
+        run: pnpm test # This will currently echo "Error: no test specified"
+
+
+      # Add CDK synth step if needed for early validation
+      # - name: Synthesize CDK template
+      #   run: cd infra && pnpm exec cdk synth --quiet
